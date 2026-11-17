@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { GOOGLE_REGISTER_CONSTANTS } from './indexModel.tsx';
 import api from '../../api.tsx';
+import { ENV } from '../../config/environment';
 
 import type { RegisterResponse } from '../../interfaces/LoginInterfaces.tsx';
 import type { 
@@ -167,7 +168,7 @@ export const useRegisterController = (): RegisterControllerHook & {
         try {
             setIsLoading(true);
             
-            window.location.href = `${import.meta.env.VITE_BACKEND_URL}/oauth2/authorization/google`
+            window.location.href = `${ENV.API_URL}/oauth2/authorization/google`;
             
             navigate('/dashboard');
             toast.success('Usuário registrado e logado com sucesso!');

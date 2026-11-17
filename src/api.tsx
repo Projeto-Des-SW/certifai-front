@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { ENV } from './config/environment';
 
 const api = axios.create({
-    baseURL: 'https://certifai-backend.onrender.com/certifai',
+    baseURL: ENV.API_URL,
     headers: {
         'Content-Type': 'application/json',
     },

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/authContext.tsx';
 import { GOOGLE_LOGIN_CONSTANTS } from './indexModel.tsx';
+import { ENV } from '../../config/environment';
 
 import type { LoginControllerHook } from './indexModel.tsx';
 
@@ -65,7 +66,7 @@ export const useLoginController = (): LoginControllerHook & {
         setError(null);
 
         try {
-            window.location.href = `${import.meta.env.VITE_BACKEND_URL}/oauth2/authorization/google`
+            window.location.href = `${ENV.API_URL}/oauth2/authorization/google`;
 
             setTimeout(() => {
                 navigate('/dashboard');

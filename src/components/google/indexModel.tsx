@@ -1,3 +1,5 @@
+import { ENV } from '../../config/environment';
+
 export interface GoogleLoginButtonProps {
     onSuccess: (googleToken: string, email: string, name: string) => void;
     onError: (error: string) => void;
@@ -34,7 +36,7 @@ export interface GoogleConfig {
 }
 
 export const DEFAULT_GOOGLE_CONFIG: GoogleConfig = {
-    clientId: 'seu-google-client-id-aqui',
+    clientId: ENV.GOOGLE_CLIENT_ID,
     autoSelect: false,
     cancelOnTapOutside: true,
     scriptUrl: 'https://accounts.google.com/gsi/client'
