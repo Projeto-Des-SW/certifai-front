@@ -131,9 +131,6 @@ export const useChecklistModalController = (
   };
 
   const handleSubmit = () => {
-    console.log("Submit chamado, modo:", mode);
-    console.log("Dados do model:", model);
-    
     if (!model.nome.trim()) {
       return;
     }

@@ -1,5 +1,6 @@
-import api from "../../api";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
+import api, { getErrorMessage } from "../../api";
 import type { AbstractResponse } from "../../interfaces/AbstractInterfaces";
 import type { ChecklistItem } from "./components/ChecklistModal/indexModel";
 import { useChecklistModel, type Checklist } from "./indexModel";
@@ -7,28 +8,27 @@ import { useChecklistModel, type Checklist } from "./indexModel";
 export const useChecklistController = () => {
   const { model, updateModel, getFilteredChecklists } = useChecklistModel();
 
-  useEffect(() => {
-    const loadChecklists = async () => {
-      try {
-        updateModel({ isLoading: true });
-        const response = await api.get<AbstractResponse<Checklist[]>>(
-          "/checklist"
-        );
+  const loadChecklists = async () => {
+    try {
+      updateModel({ isLoading: true, error: null });
+      const response = await api.get<AbstractResponse<Checklist[]>>(
+        "/checklist"
+      );
 
-        if (response.status === 200 && response.data.data) {
-          updateModel({
-            checklists: response.data.data,
-            isLoading: false,
-          });
-        } else {
-          throw new Error("Erro ao carregar checklists");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar checklists:", error);
-        updateModel({ error: "Erro ao carregar checklists", isLoading: false });
+      if (response.status === 200 && response.data.data) {
+        updateModel({
+          checklists: response.data.data,
+          isLoading: false,
+        });
+      } else {
+        throw new Error("Erro ao carregar checklists");
       }
-    };
+    } catch (error) {
+      updateModel({ error: "Erro ao carregar checklists", isLoading: false });
+    }
+  };
 
+  useEffect(() => {
     loadChecklists();
   }, []);
 
@@ -47,24 +47,7 @@ export const useChecklistController = () => {
   };
 
   const refreshChecklists = async () => {
-    try {
-      updateModel({ isLoading: true });
-      const response = await api.get<AbstractResponse<Checklist[]>>(
-        "/checklist"
-      );
-
-      if (response.status === 200 && response.data.data) {
-        updateModel({
-          checklists: response.data.data,
-          isLoading: false,
-        });
-      } else {
-        throw new Error("Erro ao carregar checklists");
-      }
-    } catch (error) {
-      console.error("Erro ao carregar checklists:", error);
-      updateModel({ error: "Erro ao carregar checklists", isLoading: false });
-    }
+    await loadChecklists();
   };
 
   const handleCreateChecklist = async (
@@ -73,13 +56,14 @@ export const useChecklistController = () => {
     certificacao_id: number,
     descricao?: string
   ) => {
-    console.log(certificacao_id);
     try {
       if (!nome.trim()) {
+        toast.warn("Por favor, informe o nome da checklist.");
         return;
       }
 
       if (!certificacao_id || certificacao_id <= 0) {
+        toast.warn("Selecione uma certificação válida.");
         return;
       }
 
@@ -92,6 +76,7 @@ export const useChecklistController = () => {
         }));
 
       if (itensChecklistValidos.length === 0) {
+        toast.warn("Adicione ao menos um item válido na checklist.");
         return;
       }
 
@@ -102,49 +87,30 @@ export const useChecklistController = () => {
         itensChecklist: itensChecklistValidos,
       };
 
-      console.log("Enviando checklist:", checklistDTO);
-
       const response = await api.post<AbstractResponse<Checklist>>(
         "/checklist",
         checklistDTO
       );
 
       if (response.status === 201 && response.data) {
-        console.log("Checklist criada com sucesso:", response.data);
+        toast.success("Checklist criada com sucesso!");
         refreshChecklists(); 
       } else {
         throw new Error(response.statusText || "Erro ao criar checklist");
       }
     } catch (error) {
-      console.error("Erro ao criar checklist:", error);
+      toast.error(getErrorMessage(error, "Erro ao criar checklist."));
     }
   };
-
-  // const handleToggleItem = async (
-  //   itemId: number,
-  //   concluido: boolean
-  // ) => {
-  //   try {
-  //     await api.put<AbstractResponse<Checklist>>(
-  //       `/itens-checklist/${itemId}`,
-  //       concluido
-  //     );
-  //     refreshChecklists();
-  //   } catch (error) {
-  //     console.error("Erro ao atualizar item:", error);
-  //   }
-  // };
 
   const handleUpdateChecklist = async (
     id: number,
     nome: string,
-    itens: any[],
+    itens: Array<{ descricao?: string; descricaoItem?: string; concluido: boolean }>,
     certificacao_id: number,
     descricao?: string
   ) => {
     try {
-      console.log("Atualizando checklist:", { id, nome, itens, certificacao_id });
-      
       const itensChecklistValidos = itens.map((item) => ({
         descricaoItem: item.descricao || item.descricaoItem,
         concluido: item.concluido,
@@ -158,20 +124,17 @@ export const useChecklistController = () => {
         itensChecklist: itensChecklistValidos,
       };
   
-      console.log("DTO de atualização:", checklistDTO);
-  
       const response = await api.put<AbstractResponse<Checklist>>(
         `/checklist/${id}`,
         checklistDTO
       );
   
       if (response.status === 200) {
-        alert("Checklist atualizada com sucesso!");
+        toast.success("Checklist atualizada com sucesso!");
         refreshChecklists();
       }
     } catch (error) {
-      console.error("Erro ao atualizar checklist:", error);
-      alert("Erro ao atualizar checklist");
+      toast.error(getErrorMessage(error, "Erro ao atualizar checklist."));
     }
   };
 
@@ -182,10 +145,10 @@ export const useChecklistController = () => {
     e.stopPropagation();
     try {
       await api.delete<AbstractResponse<void>>(`/checklist/${checklistId}`);
-
+      toast.success("Checklist excluída com sucesso!");
       refreshChecklists();
     } catch (error) {
-      console.error("Erro ao deletar checklist:", error);
+      toast.error(getErrorMessage(error, "Erro ao excluir checklist."));
     }
   };
 
@@ -204,7 +167,6 @@ export const useChecklistController = () => {
     refreshChecklists,
     handleDeleteChecklist,
     handleUpdateChecklist,
-  //  handleToggleItem,
     handleCreateChecklist,
   };
 };

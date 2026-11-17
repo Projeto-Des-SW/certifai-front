@@ -3,7 +3,8 @@ import {
   useCallback, 
   useEffect 
 } from "react";
-import api from "../../../../api";
+import { toast } from "react-toastify";
+import api, { getErrorMessage } from "../../../../api";
 import type { 
   Event, 
   EventFormData 
@@ -39,7 +40,8 @@ export const useEventModalController = ({
           ...prev,
           usuarioId: response.data.data?.id
         }));
-      } catch {
+      } catch (_err) {
+        // Ignora silenciosamente se o usuário não puder ser recuperado de imediato
       }
     };
     if (isOpen) {
@@ -67,14 +69,14 @@ export const useEventModalController = ({
     }
   }, [isEditMode, event, isOpen]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
     if (!formData.titulo || formData.titulo.length < 3) newErrors.titulo = "Título obrigatório";
     if (!formData.inicio) newErrors.inicio = "Data de início obrigatória";
     if (!formData.fim) newErrors.fim = "Data de fim obrigatória";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -89,17 +91,20 @@ export const useEventModalController = ({
         };
         if (isEditMode && event) {
           await api.put<AbstractResponse<Event>>(`/eventos/${event.id}`, payload);
+          toast.success("Evento atualizado com sucesso!");
         } else {
           await api.post<AbstractResponse<Event>>("/eventos", payload);
+          toast.success("Evento criado com sucesso!");
         }
         await fetchEvents();
         onClose();
-      } catch (err: any) {
+      } catch (err: unknown) {
+        toast.error(getErrorMessage(err, "Erro ao salvar o evento."));
       } finally {
         setIsLoading(false);
       }
     },
-    [formData, isEditMode, event, onClose, fetchEvents]
+    [formData, isEditMode, event, onClose, fetchEvents, validateForm]
   );
 
   const handleOverlayClick = useCallback(
@@ -116,8 +121,8 @@ export const useEventModalController = ({
     setFormData,
     isLoading,
     errors,
+    validateForm,
     handleSubmit,
     handleOverlayClick,
-    validateForm,
   };
 };

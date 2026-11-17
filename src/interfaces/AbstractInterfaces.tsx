@@ -11,7 +11,7 @@ export interface ErrorResponse {
     message: string;
     errors?: Record<string, string[]>;
     code?: string;
-    details?: any;
+    details?: unknown;
 }
 
 // Interface para resposta de sucesso
@@ -56,7 +56,7 @@ export interface SortOptions {
 // Interface para parâmetros de busca
 export interface SearchParams {
     query: string;
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
     sort?: SortOptions;
     pagination?: Pick<PaginationData, 'page' | 'limit'>;
 }
@@ -91,7 +91,7 @@ export interface FormField {
         maxLength?: number;
         min?: number;
         max?: number;
-        custom?: (value: any) => boolean;
+        custom?: (value: unknown) => boolean;
     };
 }
 
@@ -121,7 +121,7 @@ export interface ApiConfig {
 }
 
 // Interface para resposta de API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     data: T;
     status: number;
     statusText: string;
@@ -133,7 +133,7 @@ export interface ApiError {
     message: string;
     status?: number;
     code?: string;
-    details?: any;
+    details?: unknown;
     timestamp: string;
 }
 
@@ -150,7 +150,7 @@ export interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';
     message: string;
     timestamp: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
 }
 
 // Interface para configuração de componente
@@ -158,8 +158,8 @@ export interface ComponentConfig {
     name: string;
     version: string;
     dependencies?: string[];
-    props?: Record<string, any>;
-    defaultProps?: Record<string, any>;
+    props?: Record<string, unknown>;
+    defaultProps?: Record<string, unknown>;
 }
 
 // Interface para tema
@@ -188,15 +188,15 @@ export interface GlobalState {
     theme: string;
     language: string;
     notifications: NotificationConfig[];
-    user: any;
+    user: unknown;
     permissions: string[];
 }
 
 // Interface para ação do reducer
-export interface ReducerAction<T = any> {
+export interface ReducerAction<T = unknown> {
     type: string;
     payload?: T;
-    meta?: Record<string, any>;
+    meta?: Record<string, unknown>;
 }
 
 // Interface para resultado de hook
