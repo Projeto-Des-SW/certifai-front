@@ -4,8 +4,10 @@ import React, {
     useContext,
     useEffect,
 } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../api.tsx';
 import apiWithoutAuthHeader from '../apiSemHeader.tsx';
+import LoadingSpinner from '../components/common/LoadingSpinner/index.tsx';
 
 import type { UsuarioResponse } from '../interfaces/UsuarioInterfaces.tsx';
 import type { AuthResponse } from '../interfaces/AuthInterfaces.tsx';
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthResponse | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<UsuarioResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const location = useLocation();
 
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
@@ -31,13 +34,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
             setUser(loginData.usuario);
             return true;
-        } catch (error) {
-            console.error("Falha no login:", error);
+        } catch (_error) {
             setUser(null);
             return false;
         }
     };
-
 
     const logout = async () => {
         try {
@@ -46,8 +47,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setUser(null);
-        } catch (error) {
-            console.error("Erro no logout do servidor, mas limpando o estado localmente.", error);
+        } catch (_error) {
+            sessionStorage.removeItem('token');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
         } finally {
             setUser(null);
         }
@@ -60,7 +63,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 '/auth/verify',         
                 '/login',              
                 '/register',           
-                '/esqueci-senha',   
+                '/esqueci-senha',
+                '/forgot-password',
                 '/auth/validate-reset-token',    
             ];
 
@@ -83,10 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 } else {
                     setUser(null);
                 }
-            } catch (error) {
-                // Se a chamada a /auth/me falhar (ex: 401 Unauthorized), significa que o token é inválido/expirado.
-                // Limpamos o token e o usuário.
-                console.error("Erro ao verificar autenticação ou token inválido:", error);
+            } catch (_error) {
                 localStorage.removeItem('token'); 
                 setUser(null);
             } finally {
@@ -99,7 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAuthenticated = !!user;
 
     if (isLoading) {
-        return <div>Carregando aplicação...</div>;
+        return <LoadingSpinner fullScreen message="Carregando CertifAI..." />;
     }
 
     return (

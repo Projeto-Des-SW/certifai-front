@@ -51,10 +51,7 @@ export const useManagementController = () => {
 
     // Função para garantir que o token está configurado nas requisições
     const ensureTokenInHeaders = () => {
-        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-        if (token && !api.defaults.headers.common['Authorization']) {
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
+        // Token is injected automatically by api.interceptors.request
     };
 
     // Check if user has admin role

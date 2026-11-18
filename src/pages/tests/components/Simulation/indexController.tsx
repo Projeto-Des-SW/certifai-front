@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../../api';
-import { useTestsController } from '../../indexController';
 import type { SimulationState, SimulationControllerHook } from './indexModel';
 
 export function useSimulationController(provaId: number): SimulationControllerHook {
     const navigate = useNavigate();
-    const { } = useTestsController();
     const [state, setState] = useState<SimulationState>({
         currentIndex: 0,
         answers: {},

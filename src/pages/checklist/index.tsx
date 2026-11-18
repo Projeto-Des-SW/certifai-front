@@ -32,8 +32,6 @@ const ChecklistPage: React.FC = () => {
     
   } = useChecklistController();
 
-console.log("Checklists:", filteredChecklists);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("todos");
 

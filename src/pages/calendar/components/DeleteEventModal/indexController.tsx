@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import api from "../../../../api";
+import { toast } from "react-toastify";
+import api, { getErrorMessage } from "../../../../api";
 import type { DeleteEventModalControllerHook, UseDeleteEventModalControllerProps } from "./indexModel";
 import type { Event } from "../../indexModel";
 import type { AbstractResponse } from "../../../../interfaces/AbstractInterfaces";
@@ -16,9 +17,11 @@ export const useDeleteEventModalController = ({
     try {
       setIsLoading(true);
       await api.delete<AbstractResponse<void>>(`/eventos/${event.id}`);
+      toast.success("Evento excluído com sucesso!");
       onClose();
       await fetchEvents();
     } catch (error) {
+      toast.error(getErrorMessage(error, "Erro ao excluir o evento."));
     } finally {
       setIsLoading(false);
     }
