@@ -1,0 +1,48 @@
+name: CI / Frontend Quality & Build Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'chore/**'
+      - 'refactor/**'
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-test:
+    name: Code Quality, Tests & Production Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Static Code Analysis (Linting)
+        run: npm run lint
+
+      - name: Automated Unit & Component Tests
+        run: CI=true npm test
+
+      - name: Production Bundle Compilation (Typecheck & Build)
+        run: npm run build
+        env:
+          VITE_API_URL: https://certifai-backend.onrender.com/certifai
