@@ -1,140 +1,232 @@
-**CertifAI** - Certificação e Autenticação Inteligente 🚀
+# CertifAI Frontend
+
+[![CI Pipeline](https://github.com/mayeufraferreira/certifai-front/actions/workflows/ci.yml/badge.svg)](https://github.com/mayeufraferreira/certifai-front/actions/workflows/ci.yml)
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.4.6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Nginx](https://img.shields.io/badge/Nginx-Alpine-009639?logo=nginx&logoColor=white)](https://nginx.org/)
+[![Vitest](https://img.shields.io/badge/Vitest-5.1.0-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![ESLint](https://img.shields.io/badge/ESLint-9.25.0-4B32C3?logo=eslint&logoColor=white)](https://eslint.org/)
+
+Plataforma web moderna, responsiva e acessível do ecossistema **CertifAI**, desenvolvida para gerenciar jornadas completas de preparação, simulados interativos, cronogramas de estudo e acompanhamento de desempenho para certificações profissionais de tecnologia (AWS, GCP, Azure, Kubernetes, entre outras).
 
 ---
 
-# CertifAI Front-end
+## 📋 Visão Geral e Experiência do Usuário (UX)
 
-CertifAI é uma aplicação web moderna desenvolvida em React que oferece funcionalidades relacionadas à certificação e autenticação de usuários. O projeto utiliza uma arquitetura baseada em componentes com padrão MVC e integração com APIs externas.
+O **CertifAI Frontend** atua como a interface central do usuário na plataforma CertifAI, oferecendo uma experiência de Single Page Application (SPA) fluida, reativa e segura, totalmente integrada aos serviços REST do `certifai-backend`.
 
-## 👥 Equipe
+### Principais Fluxos de Tela e Funcionalidades
 
-- [Luana Vitória](https://github.com/LuBrito371)
-- [Matheus Marcos](https://github.com/Matheusxr77)
-- [Mayara Karoline](https://github.com/mayeufraferreira)
+1. **Autenticação & Controle de Acesso:**
+   - Fluxo completo de autenticação com credenciais (JWT) ou Single Sign-On (Google OAuth2).
+   - Confirmação de e-mail e validação de token de redefinição de senha (`/auth/verify`, `/forgot-password`, `/reset-password`).
+   - Controle de sessões com expiração automática e redirecionamento seguro sem perdas de estado.
+2. **Dashboard & Indicadores de Performance (`/dashboard`, `/performance`):**
+   - Visão consolidada do progresso do usuário em exames e simulados concluídos.
+   - Gráficos analíticos de taxa de acerto por área de conhecimento utilizando `Chart.js` e `react-chartjs-2`.
+3. **Gestão de Certificações & Questões (`/certifications`, `/questions`):**
+   - Catálogo de exames com filtros por dificuldade (Iniciante, Intermediário, Avançado) e busca textual.
+   - Banco de questões categorizadas por tópico, permitindo cadastro de alternativas e justificativas.
+4. **Simulador de Provas Interativo (`/tests`, `/tests/simulation/:provaId`):**
+   - Montagem de simulados personalizados por certificação com temporizador configurável.
+   - Ambiente focado para execução da prova, navegação entre questões, salvamento de respostas e cálculo de nota em tempo real.
+5. **Planejamento & Checklists (`/calendar`, `/checklist`):**
+   - Calendário visual interativo com agendamento de marcos de estudo e datas oficiais de exames.
+   - Checklists operacionais com progresso percentual por certificação.
+6. **Administração de Usuários (`/management`):**
+   - Painel exclusivo para usuários com perfil `ADMIN`, permitindo auditoria, edição de perfis e desativação de contas.
 
-## 🚀 Tecnologias Utilizadas
+---
 
-### Core
-- **React 18+** - Biblioteca principal para construção da interface
-- **Vite** - Ferramenta de build e desenvolvimento ultrarrápida
-- **TypeScript** - Superset do JavaScript para tipagem estática
-- **React Router DOM** - Roteamento de páginas SPA
-- **CSS3** - Estilização customizada
+## 🏛️ Arquitetura Frontend e Decisões Técnicas
 
-### Bibliotecas e Dependências
-- **React Icons (Feather Icons)** - Biblioteca de ícones
-- **React Hooks** - Gerenciamento de estado e efeitos
-- **Google OAuth** - Autenticação social com Google
-
-## 📁 Estrutura do Projeto
+O projeto adota uma arquitetura modular inspirada no padrão **Model-View-Controller (MVC) adaptado para React**, promovendo uma separação estrita de responsabilidades:
 
 ```
 src/
-├── assets/
-│   └── images/           # Imagens e recursos estáticos
-├── components/           # Componentes reutilizáveis
-│   └── UnderConstruction/
-│       ├── index.tsx     # Componente de view
-│       ├── indexController.ts  # Lógica de negócio
-│       ├── indexModel.ts # Tipos e interfaces
-│       └── styles.css    # Estilos do componente
-├── pages/               # Páginas da aplicação
-│   ├── register/
-│   │   ├── index.tsx
-│   │   ├── indexController.tsx
-│   │   ├── indexModel.tsx
-│   │   └── styles.css
-│   └── dashboard/       # Outras páginas
-└── ...
+├── assets/                 # Recursos estáticos (imagens, logotipos, fontes)
+├── config/                 # Configurações de ambiente e constantes globais
+│   └── environment.ts      # Centralização tipada de variáveis de ambiente (VITE_API_URL)
+├── components/             # Componentes reutilizáveis
+│   └── common/             # Componentes de apresentação puros (Dumb components)
+│       ├── EmptyState/     # Feedback visual para coleções sem dados
+│       ├── ErrorBoundary/  # Captura global de exceções de renderização
+│       └── LoadingSpinner/ # Indicadores de carregamento com acessibilidade (a11y)
+├── contexts/               # Provedores de contexto globais
+│   └── authContext.tsx     # Gerenciamento de sessão, estado de autenticação e perfil
+├── interfaces/             # Contratos de dados e DTOs fortemente tipados em TypeScript
+├── pages/                  # Containers inteligentes / Views (Smart components)
+│   ├── [nome-da-pagina]/
+│   │   ├── index.tsx              # View: HTML semântico, acessibilidade e renderização visual
+│   │   ├── indexController.tsx    # Controller: Custom hook contendo regras de negócio e chamadas a serviços
+│   │   ├── indexModel.tsx         # Model: Interfaces locais, estados iniciais e constantes de tela
+│   │   └── styles.css             # Estilização com escopo e design responsivo
+├── routes/                 # Definição centralizada de rotas e proteção de acesso
+├── services/               # Camada de abstração HTTP isolada (API Services)
+│   ├── authService.ts
+│   ├── calendarService.ts
+│   ├── certificationService.ts
+│   ├── checklistService.ts
+│   ├── questionService.ts
+│   ├── testService.ts
+│   ├── userService.ts
+│   └── index.ts
+├── test/                   # Configurações e mocks globais de teste (Vitest + Testing Library)
+├── api.tsx                 # Instância configurada do Axios com interceptadores globais
+└── apiSemHeader.tsx        # Cliente Axios para rotas públicas e bootstrap de autenticação
 ```
 
-## 🏗️ Arquitetura
+### Decisões Arquiteturais Chave
 
-O projeto segue uma arquitetura baseada no padrão **MVC (Model-View-Controller)**:
+1. **Separação View vs. Controller (Custom Hook):**
+   - Os templates (`index.tsx`) concentram-se estritamente na renderização de tags semânticas e acessibilidade.
+   - Toda a orquestração de formulários, chamadas assíncronas e manipulação de estado reside em hooks especializados (`use[Page]Controller`), permitindo testes unitários isolados da lógica sem acoplamento à árvore DOM.
+2. **Camada de Serviços Dedicada (`src/services/`):**
+   - Nenhuma chamada HTTP (`fetch` ou `axios`) é feita solta diretamente nos componentes. Todas as rotas do backend possuem métodos tipados com retorno baseado no envelope padrão `AbstractResponse<T>`.
+3. **Resiliência e Interceptadores HTTP Globais:**
+   - **Request Interceptor:** Injeta automaticamente o token JWT (`Authorization: Bearer <token>`) a partir do armazenamento local em todas as requisições autenticadas.
+   - **Response Interceptor:** Intercepta globalmente respostas HTTP com status de erro:
+     - `401 Unauthorized`: Limpa o token e força o redirecionamento para `/login`, exibindo alerta ao usuário sem loops de refresh.
+     - `403 Forbidden`: Alerta visual de falta de permissão para a operação.
+     - `404 Not Found`: Tratamento de rotas e recursos ausentes.
+     - `500/502/503/504`: Feedback amigável para falhas transitórias do servidor.
+     - **Falhas de Conexão/Offline:** Detecção de rede indisponível com mensagem clara para o usuário.
+4. **Estados de Carregamento (Loading), Erro e Empty States:**
+   - Operações assíncronas contam com gerenciamento de estado explícito (`isLoading`, `error`), exibindo componentes dedicados (`<LoadingSpinner />`, `<EmptyState />`) e botões com estado desabilitado durante submissões.
+5. **Acessibilidade (a11y) e HTML Semântico:**
+   - Uso de tags semânticas (`<main>`, `<section>`, `<header>`, `<nav>`, `<button type="...">`), atributos `role`, `aria-label`, `aria-live` em estados dinâmicos e suporte a navegação por teclado.
 
-- **Model** (`indexModel.ts`) - Interfaces, tipos e estruturas de dados
-- **View** (`index.tsx`) - Componentes React e renderização
-- **Controller** (`indexController.ts`) - Lógica de negócio e gerenciamento de estado
+### Fluxo de Dados e Comunicação
 
-### Características Arquiteturais
-- **Componentes Funcionais** - Uso exclusivo de hooks
-- **Custom Hooks** - Controladores como hooks customizados
-- **TypeScript Strict** - Tipagem rigorosa em todo o projeto
-- **Separação de Responsabilidades** - Cada arquivo tem uma responsabilidade específica
+```mermaid
+flowchart TD
+    User([Usuário / Navegador]) -->|Interação / Eventos| View[Smart Component / View JSX]
+    View -->|Invoca ações do Controller| Controller[Custom Hook Controller]
+    Controller -->|Consulta / Atualiza| ServiceLayer[Services Layer]
+    ServiceLayer -->|Chama cliente HTTP| AxiosInstance[Axios Client & Interceptors]
+    AxiosInstance -->|Injeta Bearer Token| BackendAPI[(CertifAI Backend REST API)]
+    BackendAPI -->|Resposta HTTP 2xx/4xx/5xx| AxiosInstance
+    AxiosInstance -->|Trata 401/403/500 globalmente| ErrorFeedback[Toasts & Error Boundary]
+    AxiosInstance -->|Dados estruturados AbstractResponse| ServiceLayer
+    ServiceLayer -->|DTOs tipados| Controller
+    Controller -->|Atualiza loading/data states| View
+    View -->|Renderiza feedback visual| User
+```
 
-## 🔧 Funcionalidades
+---
 
-### Autenticação
-- ✅ Registro de usuários
-- ✅ Login tradicional (email/senha)
-- ✅ Integração com Google OAuth
-- ✅ Validação de formulários em tempo real
-- ✅ Diferentes perfis de usuário
-- ✅ Cadastro de certificações
-- ✅ Cadastro de questões
-- ✅ Montagem de calendário de estudos
+## 🛠️ Stack Tecnológica
 
-### Interface
-- ✅ Design responsivo
-- ✅ Componentes reutilizáveis
-- ✅ Páginas "Em Construção" animadas
-- ✅ Navegação fluida entre páginas
-- ✅ Feedback visual para ações do usuário
+| Componente | Tecnologia | Versão | Propósito |
+| :--- | :--- | :--- | :--- |
+| **Framework Core** | React | `19.1.0` | Biblioteca reativa base para interfaces de usuário |
+| **DOM Renderer** | React DOM | `19.1.0` | Renderização no navegador |
+| **Linguagem** | TypeScript | `~5.8.3` | Tipagem estática rigorosa e prevenção de bugs |
+| **Empacotador / Bundler** | Vite | `^6.4.6` | Build ultrarrápido, HMR e otimização de assets |
+| **Roteamento** | React Router DOM | `^7.6.3` | Gerenciamento de rotas SPA cliente |
+| **Cliente HTTP** | Axios | `^1.10.0` | Comunicação REST com interceptors e timeout |
+| **Visualização de Dados** | Chart.js & React-Chartjs-2 | `^4.5.0` / `^5.3.0` | Dashboards analíticos de desempenho |
+| **Ícones & UI** | Lucide React / React Icons | `^0.525.0` / `^5.5.0` | Ícones modernos e acessíveis |
+| **Notificações** | React Toastify | `^11.0.5` | Feedback de sucesso/erro via toasts flutuantes |
+| **Framework de Testes** | Vitest | `^5.1.0` | Runner de testes unitários nativo para Vite |
+| **Ambiente de Testes DOM** | Testing Library & jsdom | `^16.2.0` / `^26.0.0` | Testes de componentes centrados no usuário |
+| **Linter & Padronização** | ESLint & typescript-eslint | `^9.25.0` / `^8.30.1` | Análise estática de código e governança |
+| **Servidor Web Produção** | Nginx Alpine | `stable-alpine` | Proxy reverso, gzip, segurança e roteamento SPA |
+| **Conteinerização** | Docker & Compose | Multi-Stage | Empacotamento reproduzível de desenvolvimento/produção |
 
-## 📋 Pré-requisitos
+---
 
-- **Node.js** >= 16.0.0
-- **npm** >= 8.0.0 ou **yarn** >= 1.22.0
-- **Git** para controle de versão
+## 🚀 Como Executar Localmente (Quickstart)
 
-## 🚀 Como Executar
+### Pré-requisitos
+- **Node.js** `>= 20.x` (recomendado LTS 22.x) e **npm** `>= 10.x`
+- **Docker** e **Docker Compose** (caso opte pela execução em containers)
+- Conexão de rede ativa para acessar o `certifai-backend` (hospedado ou local)
 
-### 1. Clone o repositório
+---
+
+### Opção 1: Execução via Docker (Recomendada para Produção / Avaliação)
+
+A imagem de produção utiliza **multi-stage build** com `node:lts-alpine` para gerar o bundle minificado e `nginx:stable-alpine` para servir a aplicação com compressão gzip e roteamento SPA:
+
 ```bash
-git clone https://github.com/seu-usuario/certifai-front.git
+# 1. Clone o repositório
+git clone https://github.com/mayeufraferreira/certifai-front.git
 cd certifai-front
+
+# 2. Crie seu arquivo de ambiente local (ou use os padrões)
+cp .env.example .env
+
+# 3. Suba o container com o Docker Compose
+docker compose up --build
 ```
 
-### 2. Instale as dependências
-```bash
-# Com npm
-npm install
+A aplicação estará disponível em:
+👉 **[http://localhost](http://localhost)** (ou na porta configurada via variável `PORT`).
 
-# Com yarn
-yarn install
+Para verificar a saúde do container:
+```bash
+curl -I http://localhost/health
+# HTTP/1.1 200 OK
 ```
 
-### 3. Execute o projeto
+---
+
+### Opção 2: Execução Nativa (Ambiente de Desenvolvimento)
+
 ```bash
-# Modo desenvolvimento
+# 1. Instale as dependências do projeto
+npm ci
+
+# 2. Configure as variáveis de ambiente
+cp .env.example .env
+
+# 3. Inicie o servidor de desenvolvimento Vite
 npm run dev
-# ou
-yarn run dev
-
-# O projeto estará disponível em http://localhost:5173
 ```
 
-## 🌐 Deploy
+A aplicação inicializará com Hot Module Replacement (HMR) em:
+👉 **[http://localhost:5173](http://localhost:5173)**
 
-A aplicação está configurada para deploy no Vercel: (certifai-front-ruby.vercel.app)
+---
 
-## 📱 Responsividade
+## 🧪 Qualidade de Código, Linter e Testes Automatizados
 
-O projeto é totalmente responsivo e otimizado para:
-- 📱 **Mobile** - 320px+
-- 📱 **Tablet** - 768px+
-- 💻 **Desktop** - 1024px+
-- 🖥️ **Large Desktop** - 1440px+
+O projeto conta com uma suíte de testes unitários e de integração de componentes com 100% de aprovação e execução automatizada via CI:
 
-### Padrões de Código
-- Use TypeScript para todos os novos arquivos
-- Siga o padrão MVC para novos componentes
-- Mantenha os testes atualizados
-- Use nomes descritivos para variáveis e funções
-- Documente funções complexas
+```bash
+# Executar a suíte de testes unitários (Vitest em modo headless/CI)
+npm test
 
-## Informações sobre o Projeto
+# Executar os testes em modo watch interativo
+npm run test:watch
 
-- [Termo de Abertura do Projeto (TAP)](https://drive.google.com/file/d/1duV6n9zu65UGFHoc0tcblKy3vAvIQrbE/view?usp=sharing)
-- [Estudo de Viabilidade](https://drive.google.com/file/d/10sI4_1nXo9czEw0gfo5yPX--armzI8Ae/view?usp=sharing)
-- [Plano de Projeto](https://drive.google.com/file/d/1iVBfyaF3_tIIAzdl543iz5sF2q-njH8U/view?usp=sharing)
+# Executar a verificação de lint e tipagem estática (ESLint)
+npm run lint
+
+# Gerar o bundle de produção estático (TypeScript typecheck + Vite build)
+npm run build
+```
+
+---
+
+## 🔄 Pipeline de Integração Contínua (CI/CD)
+
+O workflow do GitHub Actions (`.github/workflows/ci.yml`) é acionado automaticamente a cada `push` ou `pull_request` nas branches principais, executando os seguintes estágios:
+
+```mermaid
+flowchart LR
+    Checkout[1. Checkout do Código] --> SetupNode[2. Setup Node.js LTS]
+    SetupNode --> Install[3. npm ci]
+    Install --> Lint[4. ESLint Check]
+    Lint --> Tests[5. Vitest Suite 100%]
+    Tests --> Build[6. Production Build tsc & vite]
+```
+
+---
+
+## 📄 Licença
+
+Este projeto é distribuído sob os termos da licença **MIT**. Consulte o arquivo [LICENSE](file:///home/mayara.eufrasio/Área%20de%20trabalho/Workspace/certifai-front/LICENSE) para maiores informações.
